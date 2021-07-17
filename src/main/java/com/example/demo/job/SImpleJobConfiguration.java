@@ -1,13 +1,14 @@
 package com.example.demo.job;
 
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
+import org.springframework.batch.core.configuration.annotation.JobScope;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.repeat.RepeatStatus;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -21,15 +22,17 @@ public class SImpleJobConfiguration {
   @Bean
   public Job simpleJob() {
     return jobBuilderFactory.get("simpleJob")
-        .start(simpleStep1())
+        .start(simpleStep1(null))
         .build();
   }
 
   @Bean
-  public Step simpleStep1() {
+  @JobScope
+  public Step simpleStep1(@Value("#{JobParameters[requestDate]}") String requestDate) {
      return stepBuilderFactory.get("simpleStep1")
          .tasklet(((contribution, chunkContext) -> {
            log.info(">>>>> this Step 1");
+           log.info("requestDate = {}", requestDate);
            return RepeatStatus.FINISHED;
          }))
          .build();
